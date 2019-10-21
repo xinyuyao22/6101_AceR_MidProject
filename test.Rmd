@@ -1,0 +1,17 @@
+---
+title: "test"
+author: "Jingya Gao"
+date: "10/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ISLR)
+data1 = iris
+head(data1)
+```
+
