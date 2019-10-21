@@ -685,7 +685,7 @@ More deeper to analyze the cardio, because of gender, cholesterol, glucose level
 
 We know that BMI have higher corelation with cardio diseaseas, we want know what will be risk factors to affect BMI. It will also have affect to cardio diseases. For the bmiGroup, it is also same like chapter3, we divide it to five group. It is better to us use chi-square to test it. Our conclusion is that people have cardio diseases, female people, smoking, drinking alco and do active will more developing BMI number. For the chapter4.2, we know that people who have higher bmi are older people. We can conclude that people have higher BMI will develop cardio disease. Also, we can conclude that people who have pervious bad habit will develop the cardio diseases. On the next project, we will more focus on cardio diseases.
 
-
+### 111
 
 ### GitHub Link
 https://github.com/gggabbby/6101_AceR_MidProject.git
