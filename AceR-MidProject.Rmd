@@ -673,7 +673,7 @@ From the three safe/warning area vs cardiovascular disease bar plots, the risk o
 
 
 
-## Conclusion and Discussion
+## Chapter 7: Conclusion and Discussion
 
 In summary, our analysis indicated that BMI level and smoking are associated with the risk of cardiovascular diseases. Moreover, age, gender, smoking, blood glucose level, and alcohol use have an impact on BMI level. 
 
