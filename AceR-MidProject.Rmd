@@ -26,7 +26,7 @@ Since there are many reports indicated that the cause of cardiovascular diseases
 ## Chapter 2: Description of Data and Exploratory Data Analysis
 
 ### 2.1 Source Data
-The source data for our EDA is a CSV containing 70 000 records of patients data in 12 features: age, height, weight, gender, systolic blood pressure, diastolic blood pressure, cholesterol, glucose, smoking, alcohol intake, physical activity, and presence or absence of cardiovascular disease. (https://www.kaggle.com/sulianova/cardiovascular-disease-dataset)
+The source data for our EDA is a CSV containing 70,000 records of patients data in 12 features: age, height, weight, gender, systolic blood pressure, diastolic blood pressure, cholesterol, glucose, smoking, alcohol intake, physical activity, and presence or absence of cardiovascular disease. (https://www.kaggle.com/sulianova/cardiovascular-disease-dataset)
 ```{r, echo=FALSE}
 cardio <- read.csv("cardio_train.csv", sep = ";")
 cardio$gender <- as.factor(cardio$gender)
@@ -217,6 +217,7 @@ ccor<-cor(cardio[c("age", "bmi", "ap_hi", "ap_lo")])
 corrplot(ccor)
 ```
 
+We noticed that bmi is positively correlated with both ap_hi and ap_lo; ap_hi is positively correlated with age;and ap_hi and ap_lo are of course highly positively correlated.
 
 ## Chapter 3: Cardio
 ### 3.1 SMART Question
