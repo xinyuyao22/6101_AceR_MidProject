@@ -1,27 +1,32 @@
 ---
 title: 'DATS6101 Group Project: Cardiovascular Disease'
 author: "Chia Han Lee, Jingya Gao, Xiaotian Huang, and Xinyu Yao"
-date: "Oct 15, 2019"
+date: "Oct 22, 2019"
 output:
-  html_document:
-    df_print: paged
+  html_document: 
+    toc: yes
+  pdf_document: default
+  word_document: default
 ---
 
 ## Chapter 1: Introduction of Cardiovascular Disease:
 
 Based on The World Health Organization (WHO), Cardiovascular diseases (CVDs) are disorders related to the heart and blood vessels. The diseases mainly caused by fatty deposits plaque builds up on the inner walls of the blood vessels which prevent prevents blood from flowing to the heart or brain. 
 
-![As plaque builds up in the arteries of a person with heart disease, the inside of the arteries begins to narrow, which lessens or blocks the flow of blood.](CVD picture.jpg)
+![The process of fatty plaque formation.](CVD picture.jpg)
 
 
 According to 2016 report, cardiovascular disease remains the leading cause of death in the United States (Benjamin et al., 2019). Around 80% of CVD deaths are a heart attack and stroke. The cause of cardiovascular diseases is usually the presence of a combination of risk factors, such as unhealthy diet, obesity, physical inactivity, tobacco use and harmful use of alcohol.
 
-Since there are many reports indicated that the cause of cardiovascular diseases is associated with our lifestyle. Therefore, we want to use this dataset to validate a person's behavior and developing of the disease.
+Body mass index (BMI) is a value calculated from the weight and height of a person, the equation is kg(kilogram)/m(meter)^2. It is a measurement to assess a person’s total amount of body fat. As measuring BMI only needs a person’s weight and height, it has been widely used in public health and clinical settings.
 
+Since there are many reports indicated that the cause of cardiovascular diseases is associated with our BMI and lifestyle. Therefore, we want to evaluate whether these factors truly correlate with the developing of the disease. 
+ 
+ 
 ## Chapter 2: Description of Data and Exploratory Data Analysis
 
 ### 2.1 Source Data
-The source data for our EDA is a CSV containing 70 000 records of patients data in 12 features: age, height, weight, gender, systolic blood pressure, diastolic blood pressure, Cholesterol, Glucose, Smoking, Alcohol intake, Physical activity, and Presence or absence of cardiovascular disease. (https://www.kaggle.com/sulianova/cardiovascular-disease-dataset)
+The source data for our EDA is a CSV containing 70,000 records of patients data in 12 features: age, height, weight, gender, systolic blood pressure, diastolic blood pressure, cholesterol, glucose, smoking, alcohol intake, physical activity, and presence or absence of cardiovascular disease. (https://www.kaggle.com/sulianova/cardiovascular-disease-dataset)
 ```{r, echo=FALSE}
 cardio <- read.csv("cardio_train.csv", sep = ";")
 cardio$gender <- as.factor(cardio$gender)
@@ -202,7 +207,7 @@ qqnorm(cardio$ap_lo, main="Q-Q plot of Diastolic Blood Pressure")
 qqline(cardio$ap_lo)
 ```
 
-### Correlations among Different Variables
+### 2.3 Correlations among Different Variables
 
 The correlation matrix was displayed to get an idea of the correlations among different variables.
 
@@ -212,12 +217,18 @@ ccor<-cor(cardio[c("age", "bmi", "ap_hi", "ap_lo")])
 corrplot(ccor)
 ```
 
+We noticed that bmi is positively correlated with both ap_hi and ap_lo; ap_hi is positively correlated with age;and ap_hi and ap_lo are of course highly positively correlated.
 
 ## Chapter 3: Cardio
 ### 3.1 SMART Question
+
 What are the risk factors of cardiovascular diseases? Is gender, BMI, cholesterol level, glucose level, smoking, alcohol over-consumption and lack of exercise correlated to the development of cardiovascular disease?
 
 ### 3.2 Basic analyze
+
+First, we categorize BMI values into 5 groups, starting from numerical value ranging (1-10), and then add the numerical value by 10, sequentially. Chi-square test is being used as the preferred method, as it shows the correlation between cardiovascular disease and BMI, age, cholesterol level, glucose level, smoking behavior, alcohol over-consumption, and lack of exercise. 
+
+
 ```{r, groupbyBMI2, echo=F}
 #cardio1 <- subset(cardio, age>35)
 cardio$bmiGroup <- cut(cardio$bmi, breaks = c(0, 18.5, 25, 35, 45, 55), labels = c("0", "1", "2", "3", "4"), right = FALSE)
@@ -229,7 +240,7 @@ labs <- c(paste(seq(35, 65, by = 10), seq(44, 74, by =10 ), sep = "-"))
 cardio$ageGroup <- cut(cardio$age, breaks = c(seq(35, 74, by = 10), Inf), labels = labs, right = FALSE)
 ```
 
-```{r, chi-test1, echo=F}
+```{r, chi-test1, echo=F, warning=F}
 #cardio-bmi
 cardio_bmi = table(cardio$bmiGroup,cardio$cardio)
 chitest = chisq.test(cardio_bmi)
@@ -262,9 +273,14 @@ chitest
 
 The null hypothesis is rejected as all p-values are small. All factors indicated above are considered to be risk factors of cardiovascular disease. 
 
+In addition to Chapter 2, a bar plot is generated to show the relationship between age and the onset of cardiovascular disease. 
+
 ```{r, barplot, echo=F}
 ggplot(cardio,aes(x=age)) + geom_bar(aes(fill=factor(cardio)),position="fill")
 ```
+
+As the bar plot shows, the number of elderly with cardiovascular disease is higher than the number of younger people with cardiovascular disease. 
+We will discuss how age may affect cardiovascular disease in further detail in Chapter 5. 
 
 
 ## Chapter 4: BMI
@@ -278,7 +294,11 @@ cardio$bmiGroup <- cut(cardio$bmi, breaks = c(0, 18.5, 25, 35, 45, 55), labels =
 cardio$bmiGroup <- as.factor(cardio$bmiGroup)
 ```
 
-### 4.2 Is that bmi affect cardio?
+### 4.2 Is that bmi affect cardiovascular disease?
+
+A bar plot is generated to show the relationship between age and the onset of cardiovascular disease.
+
+
 ```{r bmi_cardio1, echo=F}
 ggplot(cardio, aes(x=bmiGroup)) + 
 geom_bar(aes(fill=factor(cardio)), position="fill") + 
@@ -287,27 +307,32 @@ labs(title="Proportion of cardio per bmiGroup",x="bmiGroup", y = "proportion")
 
 By comparing the BMI group with the incidence of getting cardiovascular disease, we conclude that people with higher BMI are more likely to develop cardiovascular disease. Likewise, people with cardiovascular disease are also more likely to have higher BMI.
 
+In addition, we subset cardiovascular disease group, with [cardio0] for people without cardiovascular disease and [cardio1] for people with cardiovascular disease. Then, we compare the mean and histogram between people with cardiovascular disease and without cardiovascular disease. 
+
+
 ```{r, echo=F}
 cardio0 <- subset(cardio, cardio == 0)
 cardio1 <- subset(cardio, cardio == 1)
 cardio1$zbmi <- scale(cardio1$bmi)
 ```
 
-Compare the mean and histogram between people have cardiovascular disease and not have cardiovascular disease
 
 ```{r, echo=F}
 mean(cardio0$bmi, na.rm = TRUE)
 mean(cardio1$bmi, na.rm = TRUE)
-hist(cardio0$bmi)
-hist(cardio1$bmi)
+hist(cardio0$bmi, col=c("#00ff00"))
+hist(cardio1$bmi, col=c("#ff00ff"))
 ```
 
+From both mean and histogram, we observe that people with cardiovascular diseases tend to have higher BMI than people without cardiovascular diseases. We conclude BMI and cardiovascular have correlation. 
+
+We will go on with the hypothesis that risk factors of high BMI value will also be the risk factors of cardiovascular diseases. 
+
 ### 4.3 Basic analysis of BMIgroup
-```{r, chi-test, echo=F}
-#bmi-cardio
-bmi_cardio = table(cardio$cardio,cardio$bmiGroup)
-chitest = chisq.test(bmi_cardio)
-chitest
+
+We fisrt use chi-test to see the relationship between BMIgroup and glucose, smoke, alchol level, exercise.
+
+```{r, chi-test, echo=F, warning=F}
 #bmi-glucose
 bmi_glucose = table(cardio$gluc,cardio$bmiGroup)
 chitest = chisq.test(bmi_glucose)
@@ -326,14 +351,17 @@ chitest = chisq.test(bmi_active)
 chitest
 ```
 
-For the glucose, cmoke, alco. The null hypothesis is rejected as all p-values are small. We conclude high BMI is moren correlated to cardiovascular disease.
+The null hypothesis for high glucose level, smoking behavior, alcohol over-consumption, and lack of exercise are rejected as all p-values are small. We conclude high BMI is more correlated to cardiovascular disease. 
 
-Our analysis indicated that BMI level is associated with the presence of cardiovascular disease, patients with
-smoke, drink alchol habits, and glucose level also associated with developing cardiovascular disease.
+In addition, the analysis indicates BMI level is associated with the presence of cardiovascular disease. Smoking behavior, alcohol-consumption, and glucose level are also associated with the onset of cardiovascular disease.
 
-For active affect bmi, p-value greater than 0.05. We fail to reject H0, we can conclude that it has no impact on BMI among people who are active than people who are not active.
+Furthermore, we fail to reject H0 as the p-value for activity level is greater than 0.05. There is no impact on BMI among people who are active and people who are not active. 
+
 
 ### 4.4 Conclusion of BMI
+
+We use t-test and boxplot to analyze BMI and subset each risk factors. Specifically, we subset women and men for gender, smoke (0) and not smoke (1) for smoking behavior, noalco (0) and alco (1) for alcohol consumption, and noactive (0) and active (1) for activity level. Boxplot helps us to find groups with higher BMI.
+
 ```{r, ttest, echo=F}
 #bmi-cardio
 cardio0 <- subset(cardio, cardio == 0)
@@ -367,7 +395,8 @@ bmitest
 boxplot(bmi ~ active, data = cardio, col=c("#00ff00","#ff00ff"))
 ```
 
-We conclude that smoking, alcohol consumption, and female gender are contributed to higher BMI. In addition, the discussed characteristics has less impact on BMI among people who are active than people who are not active. 
+We conclude that no smoking, alcohol consumption, and female gender are contributed to higher BMI. In addition, the discussed characteristics has less impact on BMI among people who are active than people who are not active. Because cardiovascular diseases have correlation with BMI, People who no smoking, drink alcohol, and female gender also be the risk factors of cardiovascular diseases.
+
 
 ## Chapter 5: Age
 ### 5.1 SMART Question
@@ -375,6 +404,8 @@ We conclude that smoking, alcohol consumption, and female gender are contributed
 Are the mean values of different factors such as systolic blood pressure and diastolic blood pressure same across age group?
 
 ### 5.2.1 Are systolic blood pressure the same across all age group
+
+We mention age and cardio diseases have relationship. We we discuss about age and bloos pressure.
 
 H0: The mean values of Systolic blood pressure are the same across all agegroup.
 
@@ -400,7 +431,8 @@ tukeyAoV <- TukeyHSD(aov)
 tukeyAoV
 ```
 
-Based on tukeyHSD, we conclude that people in age (65 ~74) and (45 ~54) have different systolic blood pressure. In addition, people in age (65~74) and (55~64) have different systolic blood pressure. 
+Based on tukeyHSD, we conclude that people in age (65 ~74) and (55 ~64) have different systolic blood pressure.
+
 The null hypothesis is rejected as all p-values are small. We conclude that the mean values of Systolic blood pressure are different across all age groups.
 
 ### 5.3 Are diastolic blood pressure the same across all age group
@@ -424,9 +456,11 @@ tukeyAoV <- TukeyHSD(aov)
 tukeyAoV
 ```
 
-Based on tukeyHSD, we conclude that people in age (65~74) and (45~54) have different diastolic blood pressure. In addition, people in age (65~74) and (55~64) have different diastolic blood pressure. 
+Based on tukeyHSD, we conclude that people in age (65~74) and (55~64) have different diastolic blood pressure. 
 
 The null hypothesis is rejected as all p-values are small. We conclude that the mean values of diastolic blood pressure are different across all age groups.
+
+We can conclude that age will affect blood pressure. High blood pressure increases the incidence of getting cardiovascular disease. 
 
 
 ```{r setup, include=FALSE}
@@ -448,7 +482,7 @@ labs <- c(paste(seq(35, 65, by = 10), seq(44, 74, by =10 ), sep = "-"))
 cardio3$ageGroup <- cut(cardio3$age, breaks = c(seq(35, 74, by = 10), Inf), labels = labs, right = FALSE)
 ```
 
-## Chapter 6: Meacurement at Predicting Cardiovascular Disease
+## Chapter 6: Cardiovascular Disease Prediction Method
 Being overweight or obese substantially increases your risk of developing cardiovascular disease. However, researchers don’t always agree which method is best for quantifying whether an individual is “too” overweight. So, this section will analyze if the BMI is the best meacurement at predicting risk.
 
 ### 6.1 SMART Question
@@ -635,6 +669,7 @@ labs(title="Men Waist Cut Off vs Cardio")
 
 ggarrange(p1,w1, m1, ncol=3,nrow=1)
 ```
+
 From the three cut off line vs cardiovascular disease bar plots, the risk of having cardiovascular disease in all genders is 17.3% if the waist circumference is below cut off line, and 32.1% if the waist circumference is over cut off line. In only women section, the risk of having cardiovascular disease is 16.8% if her waist circumference is below cut off line, and 32.8% if her waist circumference is over cut off line. In only men section, the risk of having cardiovascular disease is 18.2% if his waist circumference is below cut off line, and 30.9% if his waist circumference is over cut off line.
 
 * The bar plot below shows the relationship between safe/warning area and cardiovascular disease morbidity in all genders, men and women.
@@ -667,13 +702,14 @@ ggarrange(p2,w2, m2, ncol=3,nrow=1)
 From the three safe/warning area vs cardiovascular disease bar plots, the risk of having cardiovascular disease in all genders is 15.4% if he/she is in safe area, and 34% if he/she is in warning area. In only women section, the risk of having cardiovascular disease is 14.9% if she is in safe area, and 34.7% if she is in warning area. In only men section, the risk of having cardiovascular disease is 16.4% if he is in safe area, and 32.6% if he is in warning area.
 
 ### 6.6 Conclusion
+
 * From the three different measurements above (Cut Off Line vs Cardiovascular Disease; Obese vs Cardiovascular Disease; Cut Off Line + Obese vs Cardiovascular Disease), we could see that all of the three measurements work well to help people predict the risk of cardiovascular disease. However, the Cut Off Line + Obese vs Cardiovascular Disease measurement method performs best. 
-* If you just have your weight and height data and want to predict the disease in an easy way, you can just use them to calculate the BMI value, and use the Obese vs Cardiovascular Disease measurement.
+* If you just have your weight and height data and want to predict the disease in an easy way, you can just use them to calculate the BMI value, and use the Obese vs Cardiovascular Disease measurement. Although this method of prediction is not the most accurate in terms of results, it can also be used because the required data is relatively simple and there is no major problem with the overall trend of the prediction results.
 * If you want to predict the risk in a more accurate result, you can also measure your waist circumference while measuring your height and weight.
 
 
 
-## Conclusion and Discussion
+## Chapter 7: Project 1 Conclusion and Discussion
 
 In summary, our analysis indicated that BMI level and smoking are associated with the risk of cardiovascular diseases. Moreover, age, gender, smoking, blood glucose level, and alcohol use have an impact on BMI level. 
 
@@ -681,16 +717,23 @@ We further subgroup the BMI value into weight classes cataloged by NIH. The plot
 
 There are many risk factors in Cardiovascular diseases, studies suggested that the genetic variances in patients have an impact on the development of the diseases. Furthermore, a persons’ family with cardiovascular diseases also increased their risk (Kathiresan & Srivastava, 2012). According to Harvard Health Publishing, the rates of high blood pressure, diabetes, and heart disease vary among people of different races and living countries. Therefore, the dataset could include patients’ family background, race, and ethnicity as additional variables for analyzing cardiovascular diseases.
 
-More deeper to analyze the cardio, because of gender, cholesterol, glucose level, smoking, alcohol over-consumption and active level are all categrocial on the raw dataset.. On the next project, we will use logesitic function to analyze the relation between bmi (as numercial) with the other risk factor. On this project, we divide bmi as 5 groups, every 10 level as one group. Also for the age, we divided 10 as one group for each. For next project, we will use age as numerical data to perform 2-sample t-test.
+The data being collected in this project, including gender, smoking behavior, alcohol over-consumption, glucose level, cholesterol level, and activity level, were all categorical data from the raw dataset. Specifically, BMI values were categorized into 5 groups, starting from (1-10), and then added the numerical value by 10, sequentially. The age was processed in the same way, except being categorized into more groups. 
 
-We know that BMI have higher corelation with cardio diseaseas, we want know what will be risk factors to affect BMI. It will also have affect to cardio diseases. For the bmiGroup, it is also same like chapter3, we divide it to five group. It is better to us use chi-square to test it. Our conclusion is that people have cardio diseases, female people, smoking, drinking alco and do active will more developing BMI number. For the chapter4.2, we know that people who have higher bmi are older people. We can conclude that people have higher BMI will develop cardio disease. Also, we can conclude that people who have pervious bad habit will develop the cardio diseases. On the next project, we will more focus on cardio diseases.
+To further analyze the risk factors of cardiovascular disease in next project, we will use the logistic function to analyze the relation between BMI (as numerical data) and other risk factors. Age will be processed as numerical data, rather than categorical, to perform a 2-sample t-test. 
+
+BMI values have a higher correlation with cardiovascular disease. Risk factors that contribute to high BMI value also contribute to the onset of cardiovascular disease. From Chapter 3, we conclude that people with cardiovascular disease, female gender, no smoking and alcohol over-consumption behavior, and inactive, tend to have higher BMI value. From chapter 2-5, we conclude elderly people are more likely to have higher BMI values, and people who have higher BMI values have a higher risk of having cardiovascular disease. At the same time, in chapter 6, we listed three methods for predicting cardiovascular disease and found that the best prediction method is: use bmi and waist circumference. Having these two data can help people judge the probability of getting sick according to their physical condition.
+
+The research of this project is quite rewarding, but at the same time it can still be further researched in some aspects, so, on the next project, we will focus more on the direct relationship between unhealthy lifestyles and cardiovascular disease. 
 
 
-### GitHub Link
+
+
+## GitHub Link
+
 https://github.com/gggabbby/6101_AceR_MidProject.git
 
 
-### References:
+## References:
 
 
 Benjamin, E. J., Muntner, P., Alonso, A., Bittencourt, M. S., Callaway, C. W., Carson, A. P., . . . Stroke Statistics, S. (2019). Heart Disease and Stroke Statistics-2019 Update: A Report From the American Heart Association. Circulation, 139(10), e56-e528. doi:10.1161/CIR.0000000000000659
