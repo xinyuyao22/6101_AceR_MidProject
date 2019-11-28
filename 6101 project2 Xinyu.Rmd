@@ -254,18 +254,15 @@ logregPREDCross <- CrossTable(cardio.testLabels, cardio_1575NN, prop.chisq = FAL
 ```
 
 ```{r Q4.2.3, echo=F}
-kNN_res = table(cardio_40NN,
-                cardio.testLabels)
+kNN_res = table(cardio_40NN, cardio.testLabels)
 kNN_acc40 = sum(kNN_res[row(kNN_res) == col(kNN_res)]) / sum(kNN_res)
 kNN_acc40
 
-kNN_res = table(cardio_250NN,
-                cardio.testLabels)
+kNN_res = table(cardio_250NN, cardio.testLabels)
 kNN_acc250 = sum(kNN_res[row(kNN_res) == col(kNN_res)]) / sum(kNN_res)
 kNN_acc250
 
-kNN_res = table(cardio_1575NN,
-                cardio.testLabels)
+kNN_res = table(cardio_1575NN, cardio.testLabels)
 kNN_acc1575 = sum(kNN_res[row(kNN_res) == col(kNN_res)]) / sum(kNN_res)
 kNN_acc1575
 
@@ -464,11 +461,11 @@ uzscale <- function(df, append=0, excl=NULL) {
 
 ### 5.2 Ridge Regression
 
-```{r}
+```{r ridge regression}
 CardioRidge <- subset(cardio, select = -c(height, weight, prob))
 CardioRidge = uzscale(CardioRidge)
 
-x=model.matrix(cardio~.,CardioRidge)[,-2]
+x=model.matrix(cardio~.,CardioRidge)
 y=CardioRidge$cardio
 
 loadPkg("dplyr")
@@ -476,11 +473,11 @@ set.seed(1)
 train = CardioRidge %>% sample_frac(0.7)
 test = CardioRidge %>% setdiff(train)
  
-x_train = model.matrix(cardio~., train)[,-2]
-x_test = model.matrix(cardio~., test)[,-2]
+x_train = model.matrix(cardio~., train)
+x_test = model.matrix(cardio~., test)
 
-y_train = train %>% select(cardio) %>% unlist() # %>% as.numeric()
-y_test = test %>% select(cardio) %>% unlist() # %>% as.numeric()
+y_train = train$cardio
+y_test = test$cardio
  
 loadPkg("glmnet")
 grid=10^seq(10,-2,length=100) # prepare log scale grid for λ values, from 10^10 to 10^-2, in 100 segments
@@ -495,6 +492,11 @@ bestlam
 ridge_coef = predict(ridge.mod, type = "coefficients", s = bestlam)[1:13,] # Display coefficients using λ chosen by CV
 ridge_coef
 ridge_coef[ridge_coef!=0]
+#ridge.mod=glmnet(x_train,y_train,alpha=0,lambda=bestlam, family = "binomial")
+#ridge.pred=predict(ridge.mod,newx=x_test)
+#ridge_res = table(ridge.pred,y_test)
+#ridge_acc = sum(ridge_res[row(ridge_res) == col(ridge_res)]) / sum(ridge_res)
+#ridge_acc
 ```
 
 The best λ for Ridge regression is almost 0, which gives the least square fit. All the coefficiences are used, which agrees with the GVIF gained in Chapter 3 that there is no multicollinearity in the predictors.
@@ -512,6 +514,11 @@ bestlam
 lasso_coef = predict(lasso.mod, type = "coefficients", s = bestlam)[1:13,] # Display coefficients using λ chosen by CV
 lasso_coef
 lasso_coef[lasso_coef!=0]
+#lasso.mod=glmnet(x_train,y_train,alpha=1,lambda=bestlam, family = "binomial")
+#lasso.pred=predict(lasso.mod,newx=x_test)
+#lasso_res = table(lasso.pred,y_test)
+#lasso_acc = sum(lasso_res[row(lasso_res) == col(lasso_res)]) / sum(lasso_res)
+#lasso_acc
 ```
 
 The best λ for Lasso regression is almost 0, which gives the least square fit and agrees with Ridge Regression. However, gender and gluc are dropped from coefficients to avoid overfitting and this result match with the p-value calculated from full model of logictic regression.
@@ -548,7 +555,7 @@ print('Class: ')
 cm$byClass
 ```
 
-The overall accuracy is 71.81%.
+The overall accuracy is 71.8%.
 
 ```{r fancyplot}
 loadPkg("rpart.plot")
