@@ -521,7 +521,8 @@ lasso_coef[lasso_coef!=0]
 #lasso_acc
 ```
 
-The best λ for Lasso regression is almost 0, which gives the least square fit and agrees with Ridge Regression. However, gender and gluc are dropped from coefficients to avoid overfitting and this result match with the p-value calculated from full model of logictic regression.
+The best λ for Lasso regression is almost 0, which gives the least square fit and agrees with Ridge Regression. Very similar to Ridge, but Lasso regression often forces many parameters to be exactly zero. This
+makes Lasso Regression a good feature selection tool as well. In this case, gender and gluc are dropped from coefficients to avoid overfitting and this result match with the p-value calculated from full model of logictic regression.
 
 ## Chapter 6: Decesion Tree
 
