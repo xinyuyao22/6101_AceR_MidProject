@@ -1,0 +1,552 @@
+---
+title: "6101 Project2"
+author: "Xiaotian Huang"
+date: "11/23/2019"
+output: html_document
+---
+
+```{r basicfcn}
+# can add quietly=T option to the require() function
+loadPkg = function(x) { if (!require(x,character.only=T, quietly =T)) { install.packages(x,dep=T,repos="http://cran.us.r-project.org"); if(!require(x,character.only=T)) stop("Package not found") } }
+```
+
+## Chapter 1: Introduction of Cardiovascular Disease:
+
+Based on The World Health Organization (WHO), Cardiovascular diseases (CVDs) are disorders related to the heart and blood vessels. The diseases mainly caused by fatty deposits plaque builds up on the inner walls of the blood vessels which prevent prevents blood from flowing to the heart or brain. 
+
+![As plaque builds up in the arteries of a person with heart disease, the inside of the arteries begins to narrow, which lessens or blocks the flow of blood.](CVD picture.jpg)
+
+
+According to 2016 report, cardiovascular disease remains the leading cause of death in the United States (Benjamin et al., 2019). Around 80% of CVD deaths are a heart attack and stroke. The cause of cardiovascular diseases is usually the presence of a combination of risk factors, such as unhealthy diet, obesity, physical inactivity, tobacco use and harmful use of alcohol.
+
+Since there are many reports indicated that the cause of cardiovascular diseases is associated with our lifestyle. Therefore, we want to use this dataset to validate a person's behavior and developing of the disease.
+
+## Chapter 2: Description of Data and Exploratory Data Analysis
+
+### 2.1 Source Data
+The source data for our EDA is a CSV containing 70 000 records of patients data in 12 features: age, height, weight, gender, systolic blood pressure, diastolic blood pressure, cholesterol, glucose, smoking, alcohol intake, physical activity, and presence or absence of cardiovascular disease. (https://www.kaggle.com/sulianova/cardiovascular-disease-dataset)
+```{r, include=FALSE}
+cardio <- read.csv("cardio_train.csv", sep = ";")
+cardio$gender <- as.factor(cardio$gender)
+cardio$smoke <- as.factor(cardio$smoke)
+cardio$alco <- as.factor(cardio$alco)
+cardio$cholesterol <- as.factor(cardio$cholesterol)
+cardio$gluc <- as.factor(cardio$gluc)
+cardio$active <- as.factor(cardio$active)
+cardio$cardio <- as.factor(cardio$cardio)
+str(cardio)
+```
+### 2.2 Preprocessing Data
+
+We noticed that variable 'age' is int(day), which were converted into int(years).As height and weight individually do not mean much to patients' health, so we calculated Body Mass Index (BMI), a measure of body fat based on height and weight that applies to adult men and women, and added it as a feature. Also column 'id' was droped.
+```{r, include=F}
+cardio <- subset(cardio, select=-c(id))
+cardio$age <- round((cardio$age)/365)
+cardio$bmi <- cardio$weight/((cardio$height/100)^2)
+summary(cardio)
+```
+
+We noticed that the min value of systolic blood pressure(ap_hi) and diastolic blood pressure (ap_lo) are negative values, which do not make sense. In addition, diastolic blood pressure is supposed to be lower than systolic blood pressure. The data were further cleaned based on these crterion.
+
+```{r, echo=F}
+cardio <- cardio[which(cardio$ap_hi > 0), ]
+cardio <- cardio[which(cardio$ap_lo > 0), ]
+cardio <- cardio[which(cardio$ap_lo < cardio$ap_hi), ]
+```
+
+Then the distribution of age, height, weight, ap_hi and ap_lo was checked.
+
+```{r, echo=F}
+library('ggplot2')
+ggplot(data=cardio, aes(x=age))+
+  geom_histogram(fill="orange", col = "black", binwidth = 5)+
+  ggtitle("Histogram of Age")+
+  xlab("Age") + 
+  ylab("Count") + 
+  theme(axis.title = element_text(colour = "#7a7a78"))+
+  theme(axis.text = element_text(colour = "#7a7a78"))+
+  theme(plot.title= element_text(hjust=0.5, size = 14))
+ggplot(data=cardio, aes(x=height))+
+  geom_histogram(fill="green", col = "black", binwidth = 10)+
+  ggtitle("Histogram of Height")+
+  xlab("Height") + 
+  ylab("Count") + 
+  theme(axis.title = element_text(colour = "#7a7a78"))+
+  theme(axis.text = element_text(colour = "#7a7a78"))+
+  theme(plot.title= element_text(hjust=0.5, size = 14))
+ggplot(data=cardio, aes(x=weight))+
+  geom_histogram(fill="yellow", col = "black", binwidth = 10)+
+  ggtitle("Histogram of Weight")+
+  xlab("Weight") + 
+  ylab("Count") + 
+  theme(axis.title = element_text(colour = "#7a7a78"))+
+  theme(axis.text = element_text(colour = "#7a7a78"))+
+  theme(plot.title= element_text(hjust=0.5, size = 14))
+ggplot(data=cardio, aes(x=ap_hi))+
+  geom_histogram(fill="blue", col = "black", binwidth = 10)+
+  ggtitle("Histogram of Systolic Blood Pressure")+
+  xlab("Systolic blood pressure") + 
+  ylab("Count") + 
+  theme(axis.title = element_text(colour = "#7a7a78"))+
+  theme(axis.text = element_text(colour = "#7a7a78"))+
+  theme(plot.title= element_text(hjust=0.5, size = 14))
+ggplot(data=cardio, aes(x=ap_lo))+
+  geom_histogram(fill="red", col = "black", binwidth = 10)+
+  ggtitle("Histogram of Diastolic Blood Pressure")+
+  xlab("Diastolic blood pressure") + 
+  ylab("Count") + 
+  theme(axis.title = element_text(colour = "#7a7a78"))+
+  theme(axis.text = element_text(colour = "#7a7a78"))+
+  theme(plot.title= element_text(hjust=0.5, size = 14))
+```
+
+The histogram of age shows that there are only few observation for age<35, which could not represent the population of age<35, so the observations with age<35 were droped. For height, weight, ap_hi, and ap_lo, the histograms were way skewed by some extreme outliers, which were droped in this step.
+
+```{r outlierKD_def, include=FALSE}
+# modified to allow prompt-free run-through
+outlierKD <- function(dt, var, rmv=NULL) { 
+     var_name <- eval(substitute(var),eval(dt))
+     na1 <- sum(is.na(var_name))
+     m1 <- mean(var_name, na.rm = T)
+     sd1 <- sd(var_name,na.rm = T)
+     par(mfrow=c(2, 2), oma=c(0,0,3,0))
+     boxplot(var_name, main="With outliers")
+     hist(var_name, main="With outliers", xlab=NA, ylab=NA)
+     outlier <- boxplot.stats(var_name)$out
+     mo <- mean(outlier)
+     var_name <- ifelse(var_name %in% outlier, NA, var_name)
+     boxplot(var_name, main="Without outliers")
+     hist(var_name, main="Without outliers", xlab=NA, ylab=NA)
+     title("Outlier Check", outer=TRUE)
+     na2 <- sum(is.na(var_name))
+     cat("Outliers identified:", na2 - na1, "n")
+     cat("Propotion (%) of outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "n")
+     cat("Mean of the outliers:", round(mo, 2), "n")
+     m2 <- mean(var_name, na.rm = T)
+     cat("Mean without removing outliers:", round(m1, 2), "n")
+     cat("Mean if we remove outliers:", round(m2, 2), "n")
+     #
+     if(is.null(rmv)) { 
+       response <- readline(prompt="Do you want to remove outliers and to replace with NA? [yes/no]: ") 
+     } else {
+       if (rmv=='y'|rmv=='yes'|rmv=='Y'|rmv=='Yes'|rmv=='YES'|rmv==TRUE ) { response = 'y' } else { response = 'n' }
+     }
+     #
+     if(response == "y" | response == "yes"){
+          dt[as.character(substitute(var))] <- invisible(var_name)
+          assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
+          cat("Outliers successfully removed", "n")
+          return(invisible(dt))
+     } else{
+          cat("Nothing changed", "n")
+          return(invisible(var_name))
+     }
+}
+```
+```{r, include=FALSE}
+cardio <- cardio[which(cardio$age > 35), ]
+outlierKD(cardio, height, 'y')
+outlierKD(cardio, weight, 'y')
+outlierKD(cardio, ap_hi, 'y')
+outlierKD(cardio, ap_lo, 'y')
+cardio <- na.omit(cardio)
+```
+
+## Chapter 3: Cardio
+### 3.1 SMART Question
+
+What are the risk factors of cardiovascular diseases? Are all the variables correlated to the development of cardiovascular disease?
+
+### 3.2.1 Basic analyze
+
+```{r logit1, echo=FALSE}
+cardiologit1 <- glm(cardio ~ gender + age + ap_hi + ap_lo + cholesterol + bmi + gluc + smoke + alco + active, data = cardio, family = "binomial")
+summary(cardiologit1)
+loadPkg('car')
+vif(cardiologit1)
+```
+
+Here we use GVIF to check whether collinearity is a problem in this logistic regression model. Typically, GVIF only comes into play for factors and polynomial variables. Variables which require more than 1 coefficient and thus more than 1 degree of freedom are typically evaluated using the GVIF. For one-coefficient terms VIF equals GVIF. The rule of GVIF2(1/(2×Df))<2 is applied, which would equal a VIF of 4 for one-coefficient variables. Thus, here in our logistic regression model, collinearity is not a problem, and all the coefficients, except gender, are found significant (small p-values). Thus, gender is dropped.
+
+```{r logit, echo=FALSE}
+cardiologit <- glm(cardio ~ age + ap_hi + ap_lo + cholesterol + bmi + gluc + smoke + alco + active, data = cardio, family = "binomial")
+summary(cardiologit)
+```
+
+All the coefficients are found significant (small p-values).
+
+#### 3.2.2 Hosmer and Lemeshow test  
+
+The Hosmer and Lemeshow Goodness of Fit test can be used to evaluate logistic regression fit. 
+
+```{r HosmerLemeshow}
+loadPkg("ResourceSelection") # function hoslem.test( ) for logit model evaluation
+cardiologitHoslem = hoslem.test(cardio$cardio, fitted(cardiologit)) # Hosmer and Lemeshow test, a chi-squared test
+detach("package:ResourceSelection", unload = T) # good habit to remove unload packages no longer needed 
+```
+
+The result is shown here:  
+```{r HosmerLemeshowRes 1, results='markup', collapse=F}
+cardiologitHoslem
+```
+
+The p-value of `r cardiologitHoslem$p.value` is smaller than 0.05. This indicates the model is a good fit
+
+#### 3.2.3 ROC curve and AUC
+
+```{r roc_auc}
+loadPkg("pROC")
+prob=predict(cardiologit, type = c("response"))
+cardio$prob=prob
+h <- roc(cardio~prob, data=cardio)
+auc(h) # area-under-curve prefer 0.8 or higher.
+plot(h)
+# detach("package:pROC", unload = T) # good habit to remove unload packages no longer needed 
+```
+
+We have here the area-under-curve of `r auc(h)`, which is slightly less than 0.8. This test evaluates the model as a not so good fit. 
+
+#### 3.2.4 McFadden  
+
+```{r McFadden}
+loadPkg("pscl")
+cardioLogitpr = pR2(cardiologit)
+cardioLogitpr
+# detach("package:pscl", unload = T) # good habit to remove unload packages no longer needed 
+```
+
+With the McFadden value of `r cardioLogitpr['McFadden']`, which is analgous to the coefficient of determination R$2$, about 18.9% of the variations in cardio is explained by the explanatory variables in the model.
+
+According to the three model evaluation, this logistic regression is a relatively ok model.
+
+## Chapter 4: KNN
+
+```{r 4.1, echo=F}
+loadPkg("FNN")
+cardioKnn <- subset(cardio, select = -c(gender, cholesterol, gluc, smoke, alco, active, height, weight, prob, cardio))
+cardioKnn$ap_hi <- as.numeric(cardioKnn$ap_hi)
+cardioKnn$ap_lo <- as.numeric(cardioKnn$ap_lo)
+#first we want to scale the data so KNN will operate correctly
+scaledcardio <- as.data.frame(scale(cardioKnn, center = TRUE, scale = TRUE))
+set.seed(1)
+cardio_train_rows = sample(1:nrow(scaledcardio),
+                           round(0.7 * nrow(scaledcardio), 0),
+                           replace = FALSE)
+cardio_training <- scaledcardio[cardio_train_rows,]
+cardio_test <- scaledcardio[-cardio_train_rows,]
+```
+
+```{r 4.2, include=F}
+cardio.trainLabels <- cardio[cardio_train_rows, 12]
+cardio.testLabels <- cardio[-cardio_train_rows, 12]
+```
+
+```{r 4.2.2, echo=F}
+#So now we will deploy our model 
+cardio_40NN <- knn(train = cardio_training, test = cardio_test, cl=cardio.trainLabels, k=40)
+#install.packages("gmodels")
+loadPkg("gmodels")
+cardioPREDCross <- CrossTable(cardio.testLabels, cardio_40NN, prop.chisq = FALSE)
+cardio_250NN <- knn(train = cardio_training, test = cardio_test, cl=cardio.trainLabels, k=250)
+cardioPREDCross <- CrossTable(cardio.testLabels, cardio_250NN, prop.chisq = FALSE)
+cardio_1575NN <- knn(train = cardio_training, test = cardio_test, cl=cardio.trainLabels, k=1575)
+logregPREDCross <- CrossTable(cardio.testLabels, cardio_1575NN, prop.chisq = FALSE)
+```
+
+```{r Q4.2.3, echo=F}
+kNN_res = table(cardio_40NN,
+                cardio.testLabels)
+kNN_acc40 = sum(kNN_res[row(kNN_res) == col(kNN_res)]) / sum(kNN_res)
+kNN_acc40
+
+kNN_res = table(cardio_250NN,
+                cardio.testLabels)
+kNN_acc250 = sum(kNN_res[row(kNN_res) == col(kNN_res)]) / sum(kNN_res)
+kNN_acc250
+
+kNN_res = table(cardio_1575NN,
+                cardio.testLabels)
+kNN_acc1575 = sum(kNN_res[row(kNN_res) == col(kNN_res)]) / sum(kNN_res)
+kNN_acc1575
+
+```
+k equal n$1/3$, n$1/2$,and n$2/3$ are selected. The accuracies for k=40 is 71.3%; for k=250 is 71.8%; for k=1575 is 71.6%.
+
+### Selecting the correct "k"
+How does "k" affect classification accuracy? Let's create a function to calculate classification accuracy based on the number of "k."
+
+```{r 4.2.4}
+chooseK = function(k, train_set, val_set, train_class, val_class){
+  
+  # Build knn with k neighbors considered.
+  set.seed(1)
+  class_knn = knn(train = train_set,    #<- training set cases
+                  test = val_set,       #<- test set cases
+                  cl = train_class,     #<- category for classification
+                  k = k)       #<- control ties between class assignments
+                                        #   If true, all distances equal to the kth 
+                                        #   largest are included
+  
+  tab = table(class_knn, val_class)
+  
+  # Calculate the accuracy.
+  accu = sum(tab[row(tab) == col(tab)]) / sum(tab)                         
+  cbind(k = k, accuracy = accu)
+}
+
+# The sapply() function plugs in several values into our chooseK function.
+# function(x)[function] allows you to apply a series of numbers
+# to a function without running a for() loop.
+knn_different_k = sapply(seq(41, 1575, by = 200),
+                         function(x) chooseK(x, 
+                                             train_set = cardio_training,
+                                             val_set = cardio_test,
+                                             train_class = cardio.trainLabels,
+                                             val_class = cardio.testLabels))
+
+# Reformat the results to graph the results.
+str(knn_different_k)
+knn_different_k = data.frame(k = knn_different_k[1,],
+                             accuracy = knn_different_k[2,])
+
+# Plot accuracy vs. k.
+# install.packages("ggplot2")
+loadPkg("ggplot2")
+
+ggplot(knn_different_k,
+       aes(x = k, y = accuracy)) +
+  geom_line(color = "orange", size = 1.5) +
+  geom_point(size = 3)
+
+```
+
+As the number of class is 2, we try odd numbers from n$1/3$ to n$2/3$. It seems the peak is around 250, which is sqrt(n). Then we would like to zoom into k around 250.
+
+```{r 4.2.5}
+chooseK = function(k, train_set, val_set, train_class, val_class){
+  
+  # Build knn with k neighbors considered.
+  set.seed(1)
+  class_knn = knn(train = train_set,    #<- training set cases
+                  test = val_set,       #<- test set cases
+                  cl = train_class,     #<- category for classification
+                  k = k)       #<- control ties between class assignments
+                                        #   If true, all distances equal to the kth 
+                                        #   largest are included
+  
+  tab = table(class_knn, val_class)
+  
+  # Calculate the accuracy.
+  accu = sum(tab[row(tab) == col(tab)]) / sum(tab)                         
+  cbind(k = k, accuracy = accu)
+}
+
+# The sapply() function plugs in several values into our chooseK function.
+# function(x)[function] allows you to apply a series of numbers
+# to a function without running a for() loop.
+knn_different_k = sapply(seq(239, 261, by = 2),
+                         function(x) chooseK(x, 
+                                             train_set = cardio_training,
+                                             val_set = cardio_test,
+                                             train_class = cardio.trainLabels,
+                                             val_class = cardio.testLabels))
+
+# Reformat the results to graph the results.
+str(knn_different_k)
+knn_different_k = data.frame(k = knn_different_k[1,],
+                             accuracy = knn_different_k[2,])
+
+# Plot accuracy vs. k.
+# install.packages("ggplot2")
+loadPkg("ggplot2")
+
+ggplot(knn_different_k,
+       aes(x = k, y = accuracy)) +
+  geom_line(color = "orange", size = 1.5) +
+  geom_point(size = 3)
+
+```
+
+It seems 253-nearest neighbors is a decent choice as it has the best accuracy. However, it requires great amount of calculation to get 253-nearest neighbors, so let's check k with smaller values.
+
+```{r}
+chooseK = function(k, train_set, val_set, train_class, val_class){
+  
+  # Build knn with k neighbors considered.
+  set.seed(1)
+  class_knn = knn(train = train_set,    #<- training set cases
+                  test = val_set,       #<- test set cases
+                  cl = train_class,     #<- category for classification
+                  k = k)       #<- control ties between class assignments
+                                        #   If true, all distances equal to the kth 
+                                        #   largest are included
+  
+  tab = table(class_knn, val_class)
+  
+  # Calculate the accuracy.
+  accu = sum(tab[row(tab) == col(tab)]) / sum(tab)                         
+  cbind(k = k, accuracy = accu)
+}
+
+# The sapply() function plugs in several values into our chooseK function.
+# function(x)[function] allows you to apply a series of numbers
+# to a function without running a for() loop.
+knn_different_k = sapply(seq(1, 21, by = 2),
+                         function(x) chooseK(x, 
+                                             train_set = cardio_training,
+                                             val_set = cardio_test,
+                                             train_class = cardio.trainLabels,
+                                             val_class = cardio.testLabels))
+
+# Reformat the results to graph the results.
+str(knn_different_k)
+knn_different_k = data.frame(k = knn_different_k[1,],
+                             accuracy = knn_different_k[2,])
+
+# Plot accuracy vs. k.
+# install.packages("ggplot2")
+loadPkg("ggplot2")
+
+ggplot(knn_different_k,
+       aes(x = k, y = accuracy)) +
+  geom_line(color = "orange", size = 1.5) +
+  geom_point(size = 3)
+
+```
+
+It seems 7-nearest neighbors is a efficient choice because that's the greatest improvement in predictive accuracy before the incremental improvement trails off.
+
+Over all, if there's enough power of calculation to get the best accuracy, 253-nearest neighbors is a good choice, however, 7-nearest neighbors is a efficient choice.
+
+## Chapter 5: Ridge and Lasso Regression
+
+### 5.1 Preparation: Standardize the numerical variables
+
+When we perform Ridge or Lasso regression, as with most other cases, standardization of variables (z-scores is a typical choice) is very important.
+
+Here we introduced a function uzsale(df, append=0, excl=NULL) which will convert all numerical values to the respective z-scores. The base R library can do that too, but this new function is safe with categorical variable as well, and added some choice options.
+
+```{r uzscale_fcn }
+uzscale <- function(df, append=0, excl=NULL) { 
+  #' Standardize dataframe to z scores, safe for non-numeric variables. 
+  #' ELo 201904 GWU DATS
+  #' @param df The dataframe.
+  #' @param append T/F or 0/1. Option to append scaled columns or replace original columns in the dataframe.
+  #' @param excl A list c(a,b,"d","ef") of excluded columns, either by their indexes and/or names.
+  #' @return The transformed dataframe, appended or replaced with standardized scores. Non-numeric columns will not be appended, or if "replace option" is chosen, the columns will be untouched.
+  #' @examples
+  #' library("ISLR")
+  #' tmp = uzscale( Hitters )
+  #' tmp = uzscale( Hitters, 1 )
+  #' tmp = uzscale( Hitters, TRUE, c(19,"NewLeague") )
+
+  append = ifelse(append==TRUE || append=="true" || append=="True" || append=="T" || append=="t" || append==1 || append=="1", TRUE, FALSE) # standardize append 
+  nmax = length(df)
+  if (nmax < 1 || !is.numeric(nmax) ) { return(df) }
+  df1 = df
+  onames = colnames(df)  # the original column names
+  cnames = onames  # the new column names, if needed start with the original ones
+  znames = paste("z",cnames, sep="")     # new column names added prefix 'z'. Those are non-numeric will not be used.
+  nadd = ifelse(append, nmax, 0) # add to the column index or replace the orig columns
+  j=1  # counting index
+  for( i in 1:nmax ) {
+    if ( is.numeric(df[,i]) && !( i %in% excl || onames[i] %in% excl ) ) { 
+      df1[,j+nadd] = scale(df[,i])
+      cnames = c(cnames, znames[i])
+      j=j+1
+    } else if ( !append ) { j=j+1
+    } # if append == 1 and (colunm non-numeric or excluded), do not advance j.
+  }
+  if (append) { colnames(df1) <- cnames }
+  return(df1)
+}
+```
+
+### 5.2 Ridge Regression
+
+```{r}
+CardioRidge <- subset(cardio, select = -c(height, weight, prob))
+CardioRidge = uzscale(CardioRidge)
+
+x=model.matrix(cardio~.,CardioRidge)[,-2]
+> y=CardioRidge$cardio
+
+loadPkg("dplyr")
+set.seed(1)
+train = CardioRidge %>% sample_frac(0.7)
+test = CardioRidge %>% setdiff(train)
+ 
+x_train = model.matrix(cardio~., train)[,-2]
+x_test = model.matrix(cardio~., test)[,-2]
+
+y_train = train %>% select(cardio) %>% unlist() # %>% as.numeric()
+y_test = test %>% select(cardio) %>% unlist() # %>% as.numeric()
+ 
+loadPkg("glmnet")
+grid=10^seq(10,-2,length=100) # prepare log scale grid for λ values, from 10^10 to 10^-2, in 100 segments
+ridge.mod=glmnet(x,y,alpha=0,lambda=grid, family = "binomial") # build the ridge model. (alpha is elastic-net mixing parameter, between 0 and 1. Ridge is 0, Lasso is 1)
+
+plot(ridge.mod)    # Draw plot of coefficients
+set.seed(1)
+cv.out=cv.glmnet(x_train,y_train,alpha=0, family = "binomial")
+plot(cv.out)
+bestlam=cv.out$lambda.min
+bestlam
+```
+
+The best λ for Ridge regression is almost 0, which gives the least square fit and means all the coefficiences are used.
+
+### 5.3 Lasso Regression
+
+```{r Lasso Regression}
+lasso.mod=glmnet(x,y,alpha=1,lambda=grid, family = "binomial") # build the ridge model. (alpha is elastic-net mixing parameter, between 0 and 1. Ridge is 0, Lasso is 1)
+plot(lasso.mod)    # Draw plot of coefficients
+set.seed(1)
+cv.out=cv.glmnet(x_train,y_train,alpha=1, family = "binomial")
+plot(cv.out)
+bestlam=cv.out$lambda.min
+bestlam
+```
+
+The best λ for Lasso regression is almost 0, which gives the least square fit and means all the coefficiences are used. This results agree with Ridge Regression.
+
+## Chapter 6: Decesion Tree
+
+```{r dt, include=F}
+loadPkg("rpart") # Classification trees, rpart(formula, data=, method=,control=) 
+```
+
+```{r 6.1, echo = T, fig.dim=c(6,4)}
+cardiodtfit <- rpart(cardio ~ age + gender + ap_hi + ap_lo + cholesterol + bmi + gluc + smoke + alco + active, method="class", data=cardio)
+
+printcp(cardiodtfit) # display the results 
+plotcp(cardiodtfit) # visualize cross-validation results 
+summary(cardiodtfit) # detailed summary of splits
+
+# plot tree 
+plot(cardiodtfit, uniform=TRUE, main="Classification Tree for cardio")
+text(cardiodtfit, use.n=TRUE, all=TRUE, cex=.8)
+
+```
+
+
+We can also use some handy library to calculate these percentages in the confusion matrix.
+
+```{r cm, include=T}
+post(cardiodtfit, file = "cardioTree2.ps", title = "Classification Tree for cardio")
+loadPkg("caret") 
+cm = confusionMatrix( predict(cardiodtfit, type = "class"), reference = cardio[, "cardio"] )
+print('Overall: ')
+cm$overall
+print('Class: ')
+cm$byClass
+```
+
+The overall accuracy is 71.81%.
+
+```{r fancyplot}
+loadPkg("rpart.plot")
+rpart.plot(cardiodtfit)
+loadPkg("rattle") # For fancyRpartPlot (Trees) Answer "no" on installing from binary source
+fancyRpartPlot(cardiodtfit)
+```
