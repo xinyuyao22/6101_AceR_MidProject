@@ -160,10 +160,10 @@ What are the risk factors of cardiovascular diseases? Are all the variables corr
 ### 3.2.1 Basic analyze
 
 ```{r logit1, echo=FALSE}
-cardiologit1 <- glm(cardio ~ gender + age + ap_hi + ap_lo + cholesterol + bmi + gluc + smoke + alco + active, data = cardio, family = "binomial")
-summary(cardiologit1)
+cardiologit_full <- glm(cardio ~ gender + age + ap_hi + ap_lo + cholesterol + bmi + gluc + smoke + alco + active, data = cardio, family = "binomial")
+summary(cardiologit_full)
 loadPkg('car')
-vif(cardiologit1)
+vif(cardiologit_full)
 ```
 
 Here we use GVIF to check whether collinearity is a problem in this logistic regression model. Typically, GVIF only comes into play for factors and polynomial variables. Variables which require more than 1 coefficient and thus more than 1 degree of freedom are typically evaluated using the GVIF. For one-coefficient terms VIF equals GVIF. The rule of GVIF2(1/(2×Df))<2 is applied, which would equal a VIF of 4 for one-coefficient variables. Thus, here in our logistic regression model, collinearity is not a problem, and all the coefficients, except gender, are found significant (small p-values). Thus, gender is dropped.
@@ -469,7 +469,7 @@ CardioRidge <- subset(cardio, select = -c(height, weight, prob))
 CardioRidge = uzscale(CardioRidge)
 
 x=model.matrix(cardio~.,CardioRidge)[,-2]
-> y=CardioRidge$cardio
+y=CardioRidge$cardio
 
 loadPkg("dplyr")
 set.seed(1)
@@ -492,9 +492,12 @@ cv.out=cv.glmnet(x_train,y_train,alpha=0, family = "binomial")
 plot(cv.out)
 bestlam=cv.out$lambda.min
 bestlam
+ridge_coef = predict(ridge.mod, type = "coefficients", s = bestlam)[1:13,] # Display coefficients using λ chosen by CV
+ridge_coef
+ridge_coef[ridge_coef!=0]
 ```
 
-The best λ for Ridge regression is almost 0, which gives the least square fit and means all the coefficiences are used.
+The best λ for Ridge regression is almost 0, which gives the least square fit. All the coefficiences are used, which agrees with the GVIF gained in Chapter 3 that there is no multicollinearity in the predictors.
 
 ### 5.3 Lasso Regression
 
@@ -506,9 +509,12 @@ cv.out=cv.glmnet(x_train,y_train,alpha=1, family = "binomial")
 plot(cv.out)
 bestlam=cv.out$lambda.min
 bestlam
+lasso_coef = predict(lasso.mod, type = "coefficients", s = bestlam)[1:13,] # Display coefficients using λ chosen by CV
+lasso_coef
+lasso_coef[lasso_coef!=0]
 ```
 
-The best λ for Lasso regression is almost 0, which gives the least square fit and means all the coefficiences are used. This results agree with Ridge Regression.
+The best λ for Lasso regression is almost 0, which gives the least square fit and agrees with Ridge Regression. However, gender and gluc are dropped from coefficients to avoid overfitting and this result match with the p-value calculated from full model of logictic regression.
 
 ## Chapter 6: Decesion Tree
 
