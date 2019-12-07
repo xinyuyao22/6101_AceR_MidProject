@@ -1074,7 +1074,7 @@ text(cardiodtfit, use.n=TRUE, all=TRUE, cex=.8)
 ```
 
 
-We can also use some handy library to calculate these percentages in the confusion matrix.
+We also use caret library to calculate these percentages in the confusion matrix.
 
 ```{r cm, include=T}
 post(cardiodtfit, file = "cardioTree2.ps", title = "Classification Tree for cardio")
@@ -1104,14 +1104,13 @@ We further subgroup the BMI value into weight classes cataloged by NIH. The plot
 
 There are many risk factors in Cardiovascular diseases, studies suggested that the genetic variances in patients have an impact on the development of the diseases. Furthermore, a persons’ family with cardiovascular diseases also increased their risk (Kathiresan & Srivastava, 2012). According to Harvard Health Publishing, the rates of high blood pressure, diabetes, and heart disease vary among people of different races and living countries. Therefore, the dataset could include patients’ family background, race, and ethnicity as additional variables for analyzing cardiovascular diseases.
 
-The data being collected in this project, including gender, smoking behavior, alcohol over-consumption, glucose level, cholesterol level, and activity level, were all categorical data from the raw dataset. Specifically, BMI values were categorized into 5 groups, starting from (1-10), and then added the numerical value by 10, sequentially. The age was processed in the same way, except being categorized into more groups. 
-
-To further analyze the risk factors of cardiovascular disease in next project, we will use the logistic function to analyze the relation between BMI (as numerical data) and other risk factors. Age will be processed as numerical data, rather than categorical, to perform a 2-sample t-test. 
-
 BMI values have a higher correlation with cardiovascular disease. Risk factors that contribute to high BMI value also contribute to the onset of cardiovascular disease. From Chapter 3, we conclude that people with cardiovascular disease, female gender, no smoking and alcohol over-consumption behavior, and inactive, tend to have higher BMI value. From chapter 2-5, we conclude elderly people are more likely to have higher BMI values, and people who have higher BMI values have a higher risk of having cardiovascular disease. At the same time, in chapter 6, we listed three methods for predicting cardiovascular disease and found that the best prediction method is: use bmi and waist circumference. Having these two data can help people judge the probability of getting sick according to their physical condition.
 
-The research of this project is quite rewarding, but at the same time it can still be further researched in some aspects, so, on the next project, we will focus more on the direct relationship between unhealthy lifestyles and cardiovascular disease. 
+For the model building and evaulation, we used the logistic regression function to analyze the relation between CVD and other risk factors. The regression model indicated that age, blood pressure, and the level of cholesterol is correlated with CVD. It is worth mentioning that the higher cholesterol level is strongly associated with increased the risk of CVD. Furthermore, the vif evaulatoin suggested that the variables have no multicollinearity, the Hosmer and Lemeshow test also showed that the model is a good fit.
 
+We further used Rigged and Lasso regression in our model to ensure that the model is not overfitting. Furthermore, KNN classification analysis indicated that we only need 7-nearest neighbors to achieve 70% accuracy. For decision tree analysis, the result showed that blood pressure, age, and cholesterol level are important indicator to determine the CVD. This result is consist with the logistic regression analysis which showed that blood pressure and cholesterol level are correlated with CVD. 
+
+Overall, this CVD database provides a useful variables for us to conduct sereval chi-square test, regression analysis, and model building. 
 
 
 
