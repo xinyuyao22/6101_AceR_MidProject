@@ -1,13 +1,15 @@
 ---
 title: 'DATS6101 Group Project: Cardiovascular Disease'
 author: "Chia Han Lee, Jingya Gao, Xiaotian Huang, and Xinyu Yao"
-date: "Dec 06, 2019"
-output:
-  html_document: 
-    toc: yes
-  pdf_document: default
-  word_document: default
+date: "Dec 09, 2019"
+output: html_document
+
 ---
+
+```{r basicfcn}
+# can add quietly=T option to the require() function
+loadPkg = function(x) { if (!require(x,character.only=T, quietly =T)) { install.packages(x,dep=T,repos="http://cran.us.r-project.org"); if(!require(x,character.only=T)) stop("Package not found") } }
+```
 
 ## Chapter 1: Introduction of Cardiovascular Disease:
 
@@ -27,7 +29,7 @@ Since there are many reports indicated that the cause of cardiovascular diseases
 
 ### 2.1 Source Data
 The source data for our EDA is a CSV containing 70,000 records of patients data in 12 features: age, height, weight, gender, systolic blood pressure, diastolic blood pressure, cholesterol, glucose, smoking, alcohol intake, physical activity, and presence or absence of cardiovascular disease. (https://www.kaggle.com/sulianova/cardiovascular-disease-dataset)
-```{r, echo=FALSE}
+```{r, include=FALSE}
 cardio <- read.csv("cardio_train.csv", sep = ";")
 cardio$gender <- as.factor(cardio$gender)
 cardio$smoke <- as.factor(cardio$smoke)
@@ -1111,6 +1113,14 @@ For the model building and evaluation, we used the logistic regression function 
 We further used Rigged and Lasso regression in our model to ensure that the model is not overfitting. Furthermore, KNN classification analysis indicated that we only need 7-nearest neighbors to achieve 70% accuracy. For decision tree analysis, the result showed that blood pressure, age, and cholesterol level are important indicators to determine the CVD. This result consists of the logistic regression analysis which showed that blood pressure and cholesterol level are correlated with CVD. 
 
 Overall, this CVD database provides useful variables for us to conduct several chi-square tests, regression analysis, and model building. 
+
+
+###
+In our logistic regression, we want to know how variables influence cardiovascular diseases, we run the full model including gender, age, high blood pressure, low blood pressure, cholesterol level, bmi, glcose level, smoking, drinking alchol, and doing exercise. All the coefficients are found significant (small p-values) except gluc2, it may because gluc2 have small difference with gluc1 and gluc3 have large difference with gluc1. gender, age, low blood pressure, high blood pressure, cholesterol and bmi have positive effects on cardiovascular diseases (cadio = 1), while smoking, drinking alchol, do active have negatively affect the cardiovascular diseases. These are reasonable results and confirms our common beliefs. We use Hosmer and Lemeshow tes to evaluate logistic regression fit, Receiver-Operator-Characteristic (ROC) curve and Area-Under-Curve (AUC) measures the true positive rate (or sensitivity) against the false positive rate (or specificity) and McFadden is evaluation tool we can use on logit regressions. First, in Hosmer and Lemeshow test, The p-value is very small. This indicates the model is a good fit. Secondly, we have here the area-under-curve of 0.7874, which is sightly less than 0.8. This test also agrees with the Hosmer and Lemeshow test that the model is a good fit. Finally, with the McFadden value 0.1890877, which is analgous to the coefficient of determination R$2$, only about 18.9% of the variations in cardio is explained by the explanatory variables in the model. According to the three model evaluation, this logistic regression is a relatively ok model.
+
+In decision tree, we run the full model include gender, age, high blood pressure, low blood pressure, cholesterol level, bmi, glcose level, smoking, drinking alchol, and doing exercise. First, we develop visualize cross-validation results, cp is complexity parameter, provide the optimal prunings and we can prunue the tree to avoid any overfitting the data. CP value control the size of decision tree and select the optimal tree size. From graph, we can see that 4 variable is the best size for our model. Small cp value decrease relative error and increase accuracy. For our model, 3 variables have small relative error, decision tree preformance three variables. We use handy library to see accuracy, we can see the overall accuracy is 71.8%, it is ok model. In our fancyPlot, we can see the first importance variable is high blood pressure, second is age, third is cholesterol. For high blood pressure greater than 130, 40% people have cardiovascular diseases, For high blood pressure small than 130, age small than 55 years old, 36% people don't have cardiovascular diseases. For high blood pressure small than 130, age large than 55 years old and have normal cholesterol level(cholesterol=1), 21% people don't have cardiovascular diseases. For high blood pressure small than 130, age large than 55 years old and have abpve normal cholesterol level(cholesterol=2), 2% people have cardiovascular diseases.
+###
+
 
 
 ## GitHub Link
