@@ -884,7 +884,8 @@ makes Lasso Regression a good feature selection tool as well. In this case, gend
 
 ```{r 9.1, echo=F}
 loadPkg("FNN")
-cardioKnn <- subset(cardio, select = -c(gender, cholesterol, gluc, smoke, alco, active, height, weight, prob, cardio))
+#cardioKnn <- subset(cardio, select = -c(gender, cholesterol, gluc, smoke, alco, active, height, weight, prob, cardio))
+cardioKnn <- subset(cardio, select = -c(gender, cholesterol, gluc, smoke, alco, active, height, weight, prob, cardio,bmiGroup,ageGroup))
 cardioKnn$ap_hi <- as.numeric(cardioKnn$ap_hi)
 cardioKnn$ap_lo <- as.numeric(cardioKnn$ap_lo)
 #first we want to scale the data so KNN will operate correctly
