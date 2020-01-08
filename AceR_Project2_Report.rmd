@@ -225,12 +225,12 @@ corrplot(ccor)
 
 We noticed that bmi is positively correlated with both ap_hi and ap_lo; ap_hi is positively correlated with age;and ap_hi and ap_lo are of course highly positively correlated.
 
-## Chapter 3: Cardio
-### 3.1 SMART Question
+### 2.4 Cardio
+#### 2.4.1 SMART Question
 
 What are the risk factors of cardiovascular diseases? Is gender, BMI, cholesterol level, glucose level, smoking, alcohol over-consumption and lack of exercise correlated to the development of cardiovascular disease?
 
-### 3.2 Basic analyze
+#### 2.4.2 Basic analyze
 
 First, we categorize BMI values into 5 groups, starting from numerical value ranging (1-10), and then add the numerical value by 10, sequentially. Chi-square test is being used as the preferred method, as it shows the correlation between cardiovascular disease and BMI, age, cholesterol level, glucose level, smoking behavior, alcohol over-consumption, and lack of exercise. 
 
@@ -289,8 +289,8 @@ As the bar plot shows, the number of elderly with cardiovascular disease is high
 We will discuss how age may affect cardiovascular disease in further detail in Chapter 5. 
 
 
-## Chapter 4: BMI
-### 4.1 SMART Question
+### 2.5 BMI
+#### 2.5.1 SMART Question
 
 What is the relationship between BMI and cardiovascular diseas and what factors will affect bmi? 
 
@@ -300,7 +300,7 @@ cardio$bmiGroup <- cut(cardio$bmi, breaks = c(0, 18.5, 25, 35, 45, 55), labels =
 cardio$bmiGroup <- as.factor(cardio$bmiGroup)
 ```
 
-### 4.2 Is that bmi affect cardiovascular disease?
+#### 2.5.2 Is that bmi affect cardiovascular disease?
 
 A bar plot is generated to show the relationship between age and the onset of cardiovascular disease.
 
@@ -334,7 +334,7 @@ From both mean and histogram, we observe that people with cardiovascular disease
 
 We will go on with the hypothesis that risk factors of high BMI value will also be the risk factors of cardiovascular diseases. 
 
-### 4.3 Basic analysis of BMIgroup
+#### 2.5.3 Basic analysis of BMIgroup
 
 We fisrt use chi-test to see the relationship between BMIgroup and glucose, smoke, alchol level, exercise.
 
@@ -364,7 +364,7 @@ In addition, the analysis indicates BMI level is associated with the presence of
 Furthermore, we fail to reject H0 as the p-value for activity level is greater than 0.05. There is no impact on BMI among people who are active and people who are not active. 
 
 
-### 4.4 Conclusion of BMI
+#### 2.5.4 Conclusion of BMI
 
 We use t-test and boxplot to analyze BMI and subset each risk factors. Specifically, we subset women and men for gender, smoke (0) and not smoke (1) for smoking behavior, noalco (0) and alco (1) for alcohol consumption, and noactive (0) and active (1) for activity level. Boxplot helps us to find groups with higher BMI.
 
@@ -404,12 +404,12 @@ boxplot(bmi ~ active, data = cardio, col=c("#00ff00","#ff00ff"))
 We conclude that no smoking, alcohol consumption, and female gender are contributed to higher BMI. In addition, the discussed characteristics has less impact on BMI among people who are active than people who are not active. Because cardiovascular diseases have correlation with BMI, People who no smoking, drink alcohol, and female gender also be the risk factors of cardiovascular diseases.
 
 
-## Chapter 5: Age
-### 5.1 SMART Question
+### 2.6 Age
+#### 2.6.1 SMART Question
 
 Are the mean values of different factors such as systolic blood pressure and diastolic blood pressure same across age group?
 
-### 5.2.1 Are systolic blood pressure the same across all age group
+#### 2.6.2 Are systolic blood pressure the same across all age group?
 
 We mention age and cardio diseases have relationship. We we discuss about age and bloos pressure.
 
@@ -441,7 +441,7 @@ Based on tukeyHSD, we conclude that people in age (65 ~74) and (55 ~64) have dif
 
 The null hypothesis is rejected as all p-values are small. We conclude that the mean values of Systolic blood pressure are different across all age groups.
 
-### 5.3 Are diastolic blood pressure the same across all age group
+#### 2.6.3 Are diastolic blood pressure the same across all age group?
 
 H0: The mean values of diastolic blood pressure are the same across all agegroup.
 
@@ -488,238 +488,14 @@ labs <- c(paste(seq(35, 65, by = 10), seq(44, 74, by =10 ), sep = "-"))
 cardio3$ageGroup <- cut(cardio3$age, breaks = c(seq(35, 74, by = 10), Inf), labels = labs, right = FALSE)
 ```
 
-## Chapter 6: Cardiovascular Disease Prediction Method
-Being overweight or obese substantially increases your risk of developing cardiovascular disease. However, researchers don’t always agree which method is best for quantifying whether an individual is “too” overweight. So, this section will analyze if the BMI is the best meacurement at predicting risk.
+## Chapter 3: Model building and evaulation 
 
-### 6.1 SMART Question
-Is BMI the best measurement at predicting risk in every individual? If not, is there another measurement to help to predict the risk of cardiovascular disease?
-
-### 6.2 Cardio in Different BMI Group
-To find the adult weight classification, see which of these BMI ranges the weight falls into:
-```{r groupbyBMI6}
-cardio3$bmiGroup <- cut(cardio3$bmi, breaks = c(0, 18.5, 25, 30, 35, 45, 50, Inf), labels = c("underWeight", "normalWeight", "overWeight", "obese", "severelyObese", "morbidlyObese", "superObese"), right = FALSE)
-```
-
-BMI  |   adult weight classification  |  
--------|-----|
-[0, 18.5) kg/m^2  | underWeight | 
-[18.5, 25) kg/m^2  | normalWeight | 
-[25, 30) kg/m^2  | overWeight |
-[30, 35) kg/m^2  | obese |
-[35, 45) kg/m^2  | severelyObese |
-[45, 50) kg/m^2  | morbidlyObese |
-[50, Inf) kg/m^2  | superObese |
-
-```{r bmi_cardio6}
-ggplot(data=cardio3, mapping=aes(x=bmiGroup,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='fill')+
-scale_fill_manual(values=c('#E5E7E9','#E74C3C'))+
-theme_minimal()+
-labs(title="Proportion of cardio per bmiGroup",x="BMI Group", y = "proportion")+
-theme(axis.text.x = element_text(angle=90, hjust=1)) 
-```
-
-
-The bar chart pressents the incidence of cardiovascular disease in groups of different BMI levels. From the figure we can see that before the severelyObese level, as the BMI parameter continues to increase, the incidence of cardiovascular disease gradually increases. When the BMI level exceeds severelyObese level, the morbidity rate tends to be stable and has a slow downward trend. 
-However, BMI is not always accurate in every individual. It overestimates body fat in people with a lot of muscle mass and tends to underestimate it in elderly people. So, the idea of using waist circumference as a risk predictor stems from the fact comes up.
-
-### 6.3 Predicted Waist Circumference by BMI
-
-Carrying excess body fat around your middle is more of a health risk than if weight is on your hips and thighs. In that case, waist circumference is a better estimate of visceral fat, the dangerous internal fat that coats the organs.
-
-An initial model expressed the regression of WC on BMI in the following form:
-
-WCi = b0 + b1BMIi + b2AGEi + b3BLACKi + b4HISPi + ei
-
-where i indexes individuals, WCi is waist circumference for individual i, BMIi is body mass index, AGEi is current age (in years), BLACKi is an indicator for African-American, HISPi is an indicator for Hispanic ethnicity, and ei is the residual.
-
-For women the pattern was better summarized by using one constant for age<35years and a separate intercept and slope for age≥35years. Thus, the model for women was
-
-WCi = c0 + c1BMIi + c2I{AGEi ≥ 35} + c3AGEi × I{AGEi ≥ 35} + c4BLACKi + c5HISPi + ei
-
-where I{B} is an indicator function: I{B} = 1 when B is true and 0 otherwise.
-
-After the prediction, the sample of the data is as follows:
-```{r predict_waist}
-predicted_men_waist <- function(bmi, age){
-    b0 = 22.61306
-    b1BMI = 2.520738*(bmi)
-    b2AGE = 0.1583812*(age)
-    return (b0 + b1BMI + b2AGE)
-}
-
-predicted_women_waist <- function(bmi, age){
-    c0 = 28.81919
-    c1BMI = 2.218007*(bmi)
-    age_35 = 1
-    c2IAGE35 = -3.688953 * age_35
-    IAGE35 = -0.6570163 * age_35
-    c3AGEi = 0.125975*(age)
-    return (c0 + c1BMI + c2IAGE35 + IAGE35 + c3AGEi)
-}
-
-predicted_waist <- function(gender, bmi, age){
-    ifelse(gender == 2, predicted_men_waist(bmi, age), predicted_women_waist(bmi, age))
-}
-
-cardio3$predict_waist <- predicted_waist(cardio3$gender, cardio3$bmi, cardio3$age)
-
-head(cardio3[c("gender", "bmi", "predict_waist")], 5)
-```
-
-### 6.4 Cut Off Line and Obese
-
-Studies have shown that a waist circumference of 95cm or more in men, and of 88cm or more in women, is associated with elevated cardiovascular risk. So, we use these parameters as cuf off line for each gender.
-
-A Body Mass Index of 25kg/m^2 or more is defined as obese, which means the risk of having cardiovascular disease is higher. 
-
-At the same time, two parameters are defined here: "safe area" and "warning area". When both waist circumference and BMI parameters are lower than the cut off line and obese parameters, the result is safe area, otherwise the result is warnning area.
-
-The statistical results of cardiovascular disease after cut off and obese classification are as follows:
-```{r bmi cut_off}
-obesed <- function(bmi){
-  ifelse(bmi < 25, "normal weight", "obese")
-}
-cardio3$obese <- obesed(cardio3$bmi)
-
-
-cutOff_men <- function(predict_waist){
-  ifelse(predict_waist > 95, "over cut off", "below cut off")
-}
-cutOff_women <- function(predict_waist){
-  ifelse(predict_waist > 88, "over cut off", "below cut off")
-}
-cutOff <- function(gender, predict_waist){
-  ifelse(gender == 2, cutOff_men(predict_waist), cutOff_women(predict_waist))
-}
-cardio3$cut_off <- cutOff(cardio3$gender, cardio3$predict_waist)
-
-
-bmi_waist_men <- function(predict_waist, bmi){
-  ifelse((predict_waist < 95) & (bmi < 25), "safe area", "warning area")
-}
-bmi_waist_women <- function(predict_waist, bmi){
-  ifelse((predict_waist < 88) & (bmi < 25), "safe area", "warning area")
-}
-bmiWaist <- function(gender, predict_waist, bmi){
-  ifelse(gender == 2, bmi_waist_men(predict_waist, bmi), bmi_waist_women(predict_waist, bmi))
-}
-cardio3$bmi_waist <- bmiWaist(cardio3$gender, cardio3$predict_waist, cardio3$bmi)
-```
-
-```{r list_gender_cutoff_cardio}
-summary_combine <- cardio3 %>% 
-  count(gender, obese, cut_off, bmi_waist, cardio)
-
-knitr::kable(summary_combine)
-```
-
-### 6.5 Cut Off Line, Obese, Cardiovascular Disease
-
-```{r dif gender group}
-cardio_women <- subset(cardio3, gender == 1)
-cardio_men <- subset(cardio3, gender == 2)
-```
-
-* The bar plot below shows the relationship between obesity and cardiovascular disease morbidity in all genders, men and women.
-
-```{r obese vs Cardio, fig.width = 18, fig.height = 6}
-p0 <- ggplot(data=cardio3, mapping=aes(x=obese,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#EC7063'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Obese vs Cardio")
-
-w0 <- ggplot(data=cardio_women, mapping=aes(x=obese,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#EC7063'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Women Obese vs Cardio")
-
-m0 <- ggplot(data=cardio_men, mapping=aes(x=obese,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#EC7063'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Men Obese vs Cardio")
-
-ggarrange(p0, w0, m0, ncol=3,nrow=1)
-```
-From the three obesity vs cardiovascular disease bar plots, the risk of having cardiovascular disease in all genders is 15.6% if they have normal weight, and 33.8% if they are obese. In only women section, the risk of having cardiovascular disease is 14.9% if she has normal weight, and 34.7% if she is obese. In only men section, the risk of having cardiovascular disease is 16.8% if he has normal weight, and 32.2% if he is obese.
-
-* The bar plot below shows the relationship between cut off line and cardiovascular disease morbidity in all genders, men and women.
-
-```{r cut-off vs Cardio, fig.width = 18, fig.height = 6}
-p1 <- ggplot(data=cardio3, mapping=aes(x=cut_off,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#5DADE2'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Waist Cut Off vs Cardio")
-
-w1 <- ggplot(data=cardio_women, mapping=aes(x=cut_off,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#5DADE2'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Women Waist Cut Off vs Cardio")
-
-m1 <- ggplot(data=cardio_men, mapping=aes(x=cut_off,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#5DADE2'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Men Waist Cut Off vs Cardio")
-
-ggarrange(p1,w1, m1, ncol=3,nrow=1)
-```
-
-From the three cut off line vs cardiovascular disease bar plots, the risk of having cardiovascular disease in all genders is 17.3% if the waist circumference is below cut off line, and 32.1% if the waist circumference is over cut off line. In only women section, the risk of having cardiovascular disease is 16.8% if her waist circumference is below cut off line, and 32.8% if her waist circumference is over cut off line. In only men section, the risk of having cardiovascular disease is 18.2% if his waist circumference is below cut off line, and 30.9% if his waist circumference is over cut off line.
-
-* The bar plot below shows the relationship between safe/warning area and cardiovascular disease morbidity in all genders, men and women.
-
-```{r bmi waist vs Cardio, fig.width = 18, fig.height = 6}
-p2 <- ggplot(data=cardio3, mapping=aes(x=bmi_waist,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#A569BD'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="BMI + Waist Cut Off vs Cardio")
-
-w2 <- ggplot(data=cardio_women, mapping=aes(x=bmi_waist,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#A569BD'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Women bmi_waist vs Cardio")
-
-m2 <- ggplot(data=cardio_men, mapping=aes(x=bmi_waist,fill=factor(cardio)))+
-geom_bar(stat="count",width=0.5,position='dodge')+
-scale_fill_manual(values=c('#E5E7E9','#A569BD'))+
-geom_text(stat='count',aes(label=scales::percent(..count../sum(..count..))), color="black", size=3.5,position=position_dodge(0.5), vjust=1.5)+
-theme_minimal()+
-labs(title="Men bmi_waist vs Cardio")
-
-ggarrange(p2,w2, m2, ncol=3,nrow=1)
-```
-
-From the three safe/warning area vs cardiovascular disease bar plots, the risk of having cardiovascular disease in all genders is 15.4% if he/she is in safe area, and 34% if he/she is in warning area. In only women section, the risk of having cardiovascular disease is 14.9% if she is in safe area, and 34.7% if she is in warning area. In only men section, the risk of having cardiovascular disease is 16.4% if he is in safe area, and 32.6% if he is in warning area.
-
-### 6.6 Conclusion
-
-* From the three different measurements above (Cut Off Line vs Cardiovascular Disease; Obese vs Cardiovascular Disease; Cut Off Line + Obese vs Cardiovascular Disease), we could see that all of the three measurements work well to help people predict the risk of cardiovascular disease. However, the Cut Off Line + Obese vs Cardiovascular Disease measurement method performs best. 
-* If you just have your weight and height data and want to predict the disease in an easy way, you can just use them to calculate the BMI value, and use the Obese vs Cardiovascular Disease measurement. Although this method of prediction is not the most accurate in terms of results, it can also be used because the required data is relatively simple and there is no major problem with the overall trend of the prediction results.
-* If you want to predict the risk in a more accurate result, you can also measure your waist circumference while measuring your height and weight.
-
-## Chapter 7: Model building and evaulation 
-
-### 7.1 SMART Question
+### 3.1 SMART Question
 
 What are the risk factors of cardiovascular diseases? Are all the variables correlated to the development of cardiovascular disease?
 
-#### 7.2.1 Basic analyze
+### 3.2 Logistic Regression
+#### 3.2.1 Basic analyze
 
 ```{r logit1, echo=FALSE}
 cardiologit_full <- glm(cardio ~ gender + age + ap_hi + ap_lo + cholesterol + bmi + gluc + smoke + alco + active, data = cardio, family = "binomial")
@@ -736,7 +512,7 @@ vif(cardiologit_full)
 
 Here we use GVIF to check whether collinearity is a problem in this logistic regression model. Typically, GVIF only comes into play for factors and polynomial variables. Variables which require more than 1 coefficient and thus more than 1 degree of freedom are typically evaluated using the GVIF. For one-coefficient terms VIF equals GVIF. The rule of GVIF2(1/(2×Df))<2 is applied, which would equal a VIF of 4 for one-coefficient variables. Thus, here in our logistic regression model, collinearity is not a problem, and all the coefficients, are found significant (small p-values). 
 
-#### 7.2.2 Hosmer and Lemeshow test  
+#### 3.2.2 Hosmer and Lemeshow test  
 
 The Hosmer and Lemeshow Goodness of Fit test can be used to evaluate logistic regression fit. 
 
@@ -753,7 +529,7 @@ cardiologitHoslem
 
 The p-value of `r cardiologitHoslem$p.value` is smaller than 0.05. This indicates the model is a good fit
 
-#### 7.2.3 ROC curve and AUC
+#### 3.2.3 ROC curve and AUC
 
 ```{r roc_auc}
 loadPkg("pROC")
@@ -767,7 +543,7 @@ plot(h)
 
 We have here the area-under-curve of `r auc(h)`, which is slightly less than 0.8. This test evaluates the model as a not so good fit. 
 
-#### 7.2.4 McFadden  
+#### 3.2.4 McFadden  
 
 ```{r McFadden}
 loadPkg("pscl")
@@ -780,9 +556,9 @@ With the McFadden value of `r cardioLogitpr['McFadden']`, which is analgous to t
 
 According to the three model evaluation, this logistic regression is a relatively ok model.
 
-## Chapter 8: Ridge and Lasso Regression
+### 3.3 Ridge and Lasso Regression
 
-### 8.1 Preparation: Standardize the numerical variables
+#### 3.3.1 Preparation: Standardize the numerical variables
 
 When we perform Ridge or Lasso regression, as with most other cases, standardization of variables (z-scores is a typical choice) is very important.
 
@@ -823,7 +599,7 @@ uzscale <- function(df, append=0, excl=NULL) {
 }
 ```
 
-### 8.2 Ridge Regression
+#### 3.3.2 Ridge Regression
 
 ```{r ridge regression}
 CardioRidge <- subset(cardio, select = -c(height, weight, prob, gender))
@@ -860,7 +636,7 @@ ridge_coef[ridge_coef!=0]
 ```
 The best λ for Ridge regression is almost 0, which gives the least square fit. All the coefficiences are used, which agrees with the GVIF gained in Chapter 3 that there is no multicollinearity in the predictors.
 
-### 8.3 Lasso Regression
+#### 3.3.3 Lasso Regression
 
 ```{r Lasso Regression}
 lasso.mod=glmnet(x,y,alpha=1,lambda=grid, family = "binomial") # build the ridge model. (alpha is elastic-net mixing parameter, between 0 and 1. Ridge is 0, Lasso is 1)
@@ -882,7 +658,8 @@ lasso_coef[lasso_coef!=0]
 The best λ for Lasso regression is almost 0, which gives the least square fit and agrees with Ridge Regression. Very similar to Ridge, but Lasso regression often forces many parameters to be exactly zero. This
 makes Lasso Regression a good feature selection tool as well. In this case, gender and gluc are dropped from coefficients to avoid overfitting and this result match with the p-value calculated from full model of logictic regression.
 
-## Chapter 9: KNN
+### 3.4 KNN
+#### 3.4.1 Preprocessing and fitting the model
 
 ```{r 9.1, echo=F}
 loadPkg("FNN")
@@ -931,7 +708,7 @@ kNN_acc5
 ```
 The accuracies for k=1 is 62.2%; for k=3 is 65.6%; for k=5 is 67.4%.
 
-### Selecting the correct "k"
+#### 3.4.2 Selecting the correct "k"
 
 How does "k" affect classification accuracy? Let's create a function to calculate classification accuracy based on the number of "k."
 
@@ -982,7 +759,7 @@ ggplot(knn_different_k,
 
 It seems 7-nearest neighbors is an efficient choice because that's the greatest improvement in predictive accuracy before the incremental improvement trails off. The accuracies for k=7 is 68.5%.
 
-## Chapter 10: Decesion Tree
+### 3.5 Decesion Tree
 
 ```{r dt, include=F}
 loadPkg("rpart") # Classification trees, rpart(formula, data=, method=,control=) 
@@ -1020,7 +797,7 @@ fancyRpartPlot(cardiodtfit)
 ```
 
 
-## Chapter 11: Conclusion and Discussion
+## Chapter 4: Conclusion and Discussion
 
 In summary, our analysis indicated that BMI level and smoking are associated with the risk of cardiovascular diseases. Moreover, age, gender, smoking, blood glucose level, and alcohol use have an impact on BMI level. 
 
